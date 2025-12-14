@@ -13,6 +13,8 @@ class AnimatedSprite(Drawable):
         reset_frame: tuple[int, int] = (0, 0),
     ):
         super().__init__()
+
+        self.sheet_file = sheet_file
         self.sheet = SpriteSheet(sheet_file, tilesize)
         self.colorkey = colorkey
         self.loaded_tiles = [None] * self.sheet.get_tilecount()
@@ -24,6 +26,9 @@ class AnimatedSprite(Drawable):
         self.frame = 0
         self.delta_acc = 0
         self.fs = frame_speed
+
+    def use_loaded(self, loaded_tiles):
+        self.loaded_tiles = loaded_tiles
 
     def get_size(self) -> tuple[int, int]:
         return self.sheet.get_tilesize()

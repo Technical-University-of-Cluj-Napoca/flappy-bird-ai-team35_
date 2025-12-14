@@ -1,5 +1,6 @@
 from sheet import SpriteSheet
 from random import randint
+from flappy import Flappy
 import pygame
 
 
@@ -22,6 +23,24 @@ class Pipes:
         self.gap = gap
         self.num = num_pipes
         self.width = width
+
+    def collide_flappy(self, flappy: Flappy):
+        min_ = 0
+        for i in range(self.num):
+            if self.pipes_x[i] + Pipes.sprite_width >= flappy.x and self.pipes_x[i] < self.pipes_x[min_]:
+                min_ = i
+
+        x = self.pipes_x[min_]
+        up_y = self.pipes_y[min_] - Pipes.sprite_height
+        down_y = self.pipes_y[min_] + self.gap
+        pipe_up = pygame.Rect(x, up_y, Pipes.sprite_width, Pipes.sprite_height)
+        pipe_down = pygame.Rect(x, down_y, Pipes.sprite_width, Pipes.sprite_height)
+        flappy_coll = flappy.collision_box()
+
+        if flappy_coll.colliderect(pipe_up) or flappy_coll.colliderect(pipe_down):
+            return True
+
+        return False
 
     def physics_update(self, delta: float):
         for i in range(self.num):

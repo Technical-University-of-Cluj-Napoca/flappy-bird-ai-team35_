@@ -2,15 +2,17 @@ from sprite import AnimatedSprite
 from utils import clamp
 import pygame
 
-FLAPPY_FILE = "res/flabby.png"
-
 class Flappy:
+    flappy_file = "res/flabby.png"
+    sprite_width = 17
+    sprite_height = 12
+
     gravity = 400
     jump = 120
     max_vel = 500
 
     def __init__(self):
-        self.sprite = AnimatedSprite(FLAPPY_FILE, (17, 12), -1, 0.1)
+        self.sprite = AnimatedSprite(Flappy.flappy_file, (Flappy.sprite_width, Flappy.sprite_height), -1, 0.1)
         self.sprite.new_animation("flap", [(0, 0), (1, 0), (2, 0)])
         self.sprite.new_animation("fall", [(0, 0)])
         self.sprite.play("fall")
@@ -18,6 +20,9 @@ class Flappy:
         self.y = 0
         self.vx = 0
         self.vy = 0
+
+    def collision_box(self):
+        return pygame.Rect(self.x, self.y, Flappy.sprite_width, Flappy.sprite_height)
 
     def update(self, delta: float):
         pass

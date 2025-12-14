@@ -23,10 +23,13 @@ def update(delta: float):
 def physics_update(delta: float):
     global screen, flappy, pipes
 
-    bg.draw(screen)
-
     pipes.physics_update(delta)
     flappy.physics_update(delta)
+
+    if pipes.collide_flappy(flappy):
+        exit(0)
+
+    bg.draw(screen)
 
     pipes.draw(screen)
     flappy.draw(screen)
@@ -51,7 +54,7 @@ if __name__ == "__main__":
 
     bg = AnimatedSprite(BG_FILE, (width, height))
 
-    pipes = Pipes(width, 3, 40)
+    pipes = Pipes(width, 2, 50)
 
     running = True
     t = time.time()

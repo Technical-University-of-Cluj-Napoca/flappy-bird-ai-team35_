@@ -1,6 +1,7 @@
 import random
 import math
 from copy import deepcopy
+from pipe import Pipes
 
 class BirdBrain:
     def __init__(self, brain=None):
@@ -37,3 +38,16 @@ class BirdBrain:
 
     def distance(self, other):
         return sum(abs(w1 - w2) for w1, w2 in zip(self.weights, other.weights))
+
+class BrainyBird:
+    def __init__(self, bird, brain):
+        self.bird = bird
+        self.brain = brain
+
+    def physics_update(self, delta: float, pipes: Pipes):
+        (x, up_y), (_, down_y) = pipes.next_pipes(self.bird)
+        res = self.brain.decide([x, up_y + Pipes.sprite_height, down_y, 1])
+        self.bird.physics_update(delta, jump=res >= 0.5)
+
+    def draw(self, screen):
+        self.bird.draw(screen)

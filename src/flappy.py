@@ -42,11 +42,10 @@ class Flappy:
     def update(self, delta: float):
         pass
 
-    def physics_update(self, delta: float):
+    def physics_update(self, delta: float, jump: bool):
         self.vy += Flappy.gravity * delta
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE] and self.vy >= -7:
+        if jump and self.vy >= -7:
             self.vy = -Flappy.jump
             self.sprite.play("flap", repeat=False)
 

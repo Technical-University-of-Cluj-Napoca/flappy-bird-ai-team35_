@@ -7,9 +7,9 @@ class Flappy:
     sprite_width = 17
     sprite_height = 12
 
-    gravity = 400
-    jump = 120
-    max_vel = 500
+    gravity = 700
+    jump = 200
+    max_vel = 300
 
     def __init__(self):
         self.sprite = AnimatedSprite(Flappy.flappy_file, (Flappy.sprite_width, Flappy.sprite_height), -1, 0.1)
@@ -31,7 +31,7 @@ class Flappy:
         self.vy += Flappy.gravity * delta
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] and self.vy >= -7:
             self.vy = -Flappy.jump
             self.sprite.play("flap", repeat=False)
 

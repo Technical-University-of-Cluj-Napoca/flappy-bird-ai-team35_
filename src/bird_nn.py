@@ -3,7 +3,6 @@ import math
 from copy import deepcopy
 
 class BirdBrain:
-
     def __init__(self, brain=None):
         if brain:
             self.weights = deepcopy(brain.weights)

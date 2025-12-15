@@ -1,5 +1,5 @@
 import random
-from bird import Bird
+from bird_nn import BrainyBird
 
 class Species:
     def __init__(self, representative):
@@ -32,29 +32,21 @@ class Population:
         self.mutation_strength = mutation_strength
 
         self.generation = 1
-        self.birds = list[Bird] # TODO birds
+        self.birds = []
+        for i in range(size):
+            self.birds.append(BrainyBird())
         self.species = []
 
-    def __init__(self, size, species_threshold, mutation_rate=0.1,mutation_strength=0.1):
-        self.size = size
-        self.species_threshold = species_threshold
-        self.mutation_rate = mutation_rate
-        self.mutation_strength = mutation_strength
-
-        self.generation = 1
-        self.birds = list[Bird] # TODO birds
-        self.species = []
-
-    def speciate(birds, threshold):
+    def speciate(self):
         species_list = []
 
-        for bird in birds:
+        for bird in self.birds:
             placed = False
 
             for species in species_list:
                 distance = bird.brain.distance(species.representative)
 
-                if distance < threshold:
+                if distance < self.species_threshold:
                     species.add(bird)
                     placed = True
                     break
@@ -73,10 +65,12 @@ class Population:
         return all(not bird.alive for bird in self.birds)
 
     def next_generation(self):
-
-        self.species = self.speciate(self.birds, self.species_threshold)
+        self.species = self.speciate()
+        print(len(self.species))
 
         self.species.sort(key=lambda s: s.fitness, reverse=True)
+        print(f"Best species fitness: {self.species[0].fitness}")
+        print(f"Best species champion fitness: {self.species[0].get_champion().fitness}")
 
         new_birds = []
 

@@ -4,11 +4,17 @@ from utils import Timer, dist
 from flappy import Flappy
 from pipe import Pipes
 from bird_nn import BirdBrain, BrainyBird
+from population import Population
 import pygame
+import random
 import time
 
 BG_FILE = "res/bg1.png"
 
+
+def create_pipes():
+    global pipes, width
+    pipes = Pipes(width, 2, 60)
 
 def update(delta: float):
     global flappy, running
@@ -19,25 +25,49 @@ def update(delta: float):
 
 
 def physics_update(delta: float):
-    global screen, flappy, pipes
+    global screen, flappy, pipes, height, width
 
     keys = pygame.key.get_pressed()
     pipes.physics_update(delta)
-    flappy.physics_update(delta, keys[pygame.K_SPACE])
 
-    if pipes.collide_flappy(flappy):
-        exit(0)
+    if manual:
+        flappy.physics_update(delta, keys[pygame.K_SPACE])
+
+        if pipes.collide_flappy(flappy) or flappy.y < 0 or flappy.y > height:
+            print("Dead")
+            exit(0)
+    else:
+        for bb in pop.birds:
+            if not bb.alive:
+                continue
+
+            bb.physics_update(delta, pipes)
+
+            if pipes.collide_flappy(bb.bird) or bb.bird.y < 0 or bb.bird.y > height:
+                bb.die()
+
+        if pop.all_dead():
+            print("dead")
+            create_pipes()
+            pop.next_generation()
 
     bg.draw(screen)
 
     pipes.draw(screen)
-    flappy.draw(screen)
+
+    if manual:
+        flappy.draw(screen)
+    else:
+        for bb in pop.birds:
+            if not bb.alive:
+                continue
+            bb.draw(screen)
 
     pygame.display.flip()
 
 
 if __name__ == "__main__":
-    global width, height, screen, score, running, flappy, bg, pipes
+    global width, height, screen, score, running, flappy, bg, pipes, pop, manual
     width = 144
     height = 256
 
@@ -49,11 +79,17 @@ if __name__ == "__main__":
 
     score = 0
 
-    flappy = Flappy()
+    random.seed(time.time())
+
+    manual = False
+    if manual:
+        flappy = Flappy()
+    else:
+        pop = Population(3000, 1.5, mutation_rate=0.9, mutation_strength=0.2)
 
     bg = AnimatedSprite(BG_FILE, (width, height))
 
-    pipes = Pipes(width, 2, 50)
+    create_pipes()
 
     running = True
     t = time.time()
@@ -70,5 +106,6 @@ if __name__ == "__main__":
 
         game_physics_delta += delta
         if game_physics_delta >= game_spf:
+            game_physics_delta *= 2
             physics_update(game_physics_delta)
             game_physics_delta = 0

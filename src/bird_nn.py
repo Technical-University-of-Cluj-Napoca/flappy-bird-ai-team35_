@@ -1,7 +1,9 @@
 import random
 import math
+from utils import clamp
 from copy import deepcopy
 from pipe import Pipes
+from flappy import Flappy
 
 class BirdBrain:
     def __init__(self, brain=None):
@@ -35,19 +37,38 @@ class BirdBrain:
         for i in range(len(self.weights)):
             if random.random() < mutation_rate:
                 self.weights[i] += random.gauss(0, mutation_strength)
+                self.weights[i] = clamp(self.weights[i], -1, 1)
+
 
     def distance(self, other):
         return sum(abs(w1 - w2) for w1, w2 in zip(self.weights, other.weights))
 
 class BrainyBird:
-    def __init__(self, bird, brain):
-        self.bird = bird
-        self.brain = brain
+    def __init__(self, bird=None, brain=None):
+        if bird is None:
+            self.bird = Flappy()
+        else:
+            self.bird = bird
+
+        if brain is None:
+            self.brain = BirdBrain()
+        else:
+            self.brain = brain
+
+        self.alive = True
+        self.fitness = 0.0
 
     def physics_update(self, delta: float, pipes: Pipes):
         (x, up_y), (_, down_y) = pipes.next_pipes(self.bird)
-        res = self.brain.decide([x, up_y + Pipes.sprite_height, down_y, 1])
-        self.bird.physics_update(delta, jump=res >= 0.5)
+        res = self.brain.decide([x, self.bird.y - up_y - Pipes.sprite_height, down_y - self.bird.y, 1])
+        self.bird.physics_update(delta, jump=res >= 0.75)
+        self.fitness += delta
+
+    def die(self):
+        self.alive = False
 
     def draw(self, screen):
         self.bird.draw(screen)
+
+    def clone(self):
+        return BrainyBird(brain=self.brain.copy())

@@ -9,17 +9,23 @@ class Pipes:
     sprite_height = 160
     sprite_width = 26
 
-    scroll_speed = 100
+    max_up = 50
+    max_down = 150
+
+    scroll_speed = 70
 
     def __init__(self, width: int, num_pipes: int, gap: int):
         sheet = SpriteSheet(Pipes.pipe_file, (Pipes.sprite_width, Pipes.sprite_height))
         self.up = sheet.image_at((0, 0), colorkey=-1)
         self.down = sheet.image_at((1, 0), colorkey=(255, 255, 255))
+        self.up_spec = sheet.image_at((2, 0), colorkey=-1)
+        self.down_spec = sheet.image_at((3, 0), colorkey=(255, 255, 255))
         del sheet
 
         horiz_gap = ((width + Pipes.sprite_width) - Pipes.sprite_width * num_pipes) / num_pipes
         self.pipes_x = [width + i * (Pipes.sprite_width + horiz_gap) for i in range(num_pipes)]
         self.pipes_y = [76] * num_pipes
+        self.special = [[False, 0] for _ in range(num_pipes)]
         self.gap = gap
         self.num = num_pipes
         self.width = width
@@ -52,13 +58,24 @@ class Pipes:
         score = 0
         for i in range(self.num):
             self.pipes_x[i] -= Pipes.scroll_speed * delta
+            if self.special[i][0]:
+                self.pipes_y[i] += self.special[i][1] * delta
+                if self.pipes_y[i] < Pipes.max_up or self.pipes_y[i] > Pipes.max_down:
+                    self.special[i][1] *= -1
             if self.pipes_x[i] + Pipes.sprite_width < 0:
                 self.pipes_x[i] = self.width
-                self.pipes_y[i] = randint(56, 140)
+                self.pipes_y[i] = randint(Pipes.max_up, Pipes.max_down)
+                self.special[i][0] = randint(0, 10) == 1
+                self.special[i][1] = randint(20, 40) * (-1 if randint(0, 1) == 1 else 1)
                 score += 1
         return score
 
     def draw(self, screen):
-        for x, y in zip(self.pipes_x, self.pipes_y):
-            screen.blit(self.up, (x, y - Pipes.sprite_height))
-            screen.blit(self.down, (x, y + self.gap))
+        for x, y, s in zip(self.pipes_x, self.pipes_y, self.special):
+            up = self.up
+            down = self.down
+            if s[0]:
+                up = self.up_spec
+                down = self.down_spec
+            screen.blit(up, (x, y - Pipes.sprite_height))
+            screen.blit(down, (x, y + self.gap))

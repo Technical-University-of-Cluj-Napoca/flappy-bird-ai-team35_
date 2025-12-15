@@ -2,19 +2,34 @@ from sprite import AnimatedSprite
 from utils import clamp
 import pygame
 
+
+loaded_tiles = None
+def new_flappy_sprite():
+    global loaded_tiles
+    sprite = AnimatedSprite(Flappy.flappy_file, (Flappy.sprite_width, Flappy.sprite_height), -1, 0.1)
+
+    if loaded_tiles is not None:
+        sprite.use_loaded(loaded_tiles)
+
+    sprite.new_animation("flap", [(0, 0), (1, 0), (2, 0)])
+    sprite.new_animation("fall", [(0, 0)])
+
+    if loaded_tiles is None:
+        loaded_tiles = sprite.loaded_tiles
+
+    return sprite
+
 class Flappy:
     flappy_file = "res/flabby.png"
     sprite_width = 17
     sprite_height = 12
 
-    gravity = 400
-    jump = 120
-    max_vel = 500
+    gravity = 700
+    jump = 200
+    max_vel = 300
 
     def __init__(self):
-        self.sprite = AnimatedSprite(Flappy.flappy_file, (Flappy.sprite_width, Flappy.sprite_height), -1, 0.1)
-        self.sprite.new_animation("flap", [(0, 0), (1, 0), (2, 0)])
-        self.sprite.new_animation("fall", [(0, 0)])
+        self.sprite = new_flappy_sprite()
         self.sprite.play("fall")
         self.x = 0
         self.y = 0
@@ -27,11 +42,10 @@ class Flappy:
     def update(self, delta: float):
         pass
 
-    def physics_update(self, delta: float):
+    def physics_update(self, delta: float, jump: bool):
         self.vy += Flappy.gravity * delta
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
+        if jump and self.vy >= -7:
             self.vy = -Flappy.jump
             self.sprite.play("flap", repeat=False)
 

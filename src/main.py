@@ -3,6 +3,7 @@ from sprite import AnimatedSprite
 from utils import Timer, dist
 from flappy import Flappy
 from pipe import Pipes
+from bird_nn import BirdBrain, BrainyBird
 import pygame
 import time
 
@@ -12,19 +13,17 @@ BG_FILE = "res/bg1.png"
 def update(delta: float):
     global flappy, running
 
-    pygame.event.pump()
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_ESCAPE]:
-        running = False
-
-    flappy.update(delta)
+    for ev in pygame.event.get():
+        if ev.type == pygame.QUIT:
+            running = False
 
 
 def physics_update(delta: float):
     global screen, flappy, pipes
 
+    keys = pygame.key.get_pressed()
     pipes.physics_update(delta)
-    flappy.physics_update(delta)
+    flappy.physics_update(delta, keys[pygame.K_SPACE])
 
     if pipes.collide_flappy(flappy):
         exit(0)

@@ -48,12 +48,15 @@ class Pipes:
 
         return ((x, up_y), (x, down_y))
 
-    def physics_update(self, delta: float):
+    def physics_update(self, delta: float) -> int:
+        score = 0
         for i in range(self.num):
             self.pipes_x[i] -= Pipes.scroll_speed * delta
             if self.pipes_x[i] + Pipes.sprite_width < 0:
                 self.pipes_x[i] = self.width
                 self.pipes_y[i] = randint(56, 140)
+                score += 1
+        return score
 
     def draw(self, screen):
         for x, y in zip(self.pipes_x, self.pipes_y):

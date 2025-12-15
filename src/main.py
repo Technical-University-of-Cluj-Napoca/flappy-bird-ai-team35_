@@ -5,6 +5,7 @@ from flappy import Flappy
 from pipe import Pipes
 from bird_nn import BirdBrain, BrainyBird
 from population import Population
+from label import NumberLabel
 import pygame
 import random
 import time
@@ -25,10 +26,10 @@ def update(delta: float):
 
 
 def physics_update(delta: float):
-    global screen, flappy, pipes, height, width
+    global screen, flappy, pipes, height, width, number_label, score
 
     keys = pygame.key.get_pressed()
-    pipes.physics_update(delta)
+    score += pipes.physics_update(delta)
 
     if manual:
         flappy.physics_update(delta, keys[pygame.K_SPACE])
@@ -49,6 +50,7 @@ def physics_update(delta: float):
         if pop.all_dead():
             print("dead")
             create_pipes()
+            score = 0
             pop.next_generation()
 
     bg.draw(screen)
@@ -63,11 +65,13 @@ def physics_update(delta: float):
                 continue
             bb.draw(screen)
 
+    score_label.draw(screen, score)
+
     pygame.display.flip()
 
 
 if __name__ == "__main__":
-    global width, height, screen, score, running, flappy, bg, pipes, pop, manual
+    global width, height, screen, score, running, flappy, bg, pipes, pop, manual, score_label
     width = 144
     height = 256
 
@@ -77,6 +81,9 @@ if __name__ == "__main__":
     pygame.font.init()
     font = pygame.font.Font(None, 16)
 
+    score_label = NumberLabel("res/numbers.png", colorkey=(255, 255, 255))
+    score_label.x = 2
+    score_label.y = 2
     score = 0
 
     random.seed(time.time())

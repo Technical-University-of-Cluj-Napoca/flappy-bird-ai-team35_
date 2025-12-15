@@ -27,8 +27,17 @@ class Species:
 
 class Population:
 
-    def speciate(birds, threshold):
+    def __init__(self, size, species_threshold, mutation_rate=0.1,mutation_strength=0.1):
+        self.size = size
+        self.species_threshold = species_threshold
+        self.mutation_rate = mutation_rate
+        self.mutation_strength = mutation_strength
 
+        self.generation = 1
+        self.birds = list[Bird] # TODO birds
+        self.species = []
+
+    def speciate(birds, threshold):
         species_list = []
 
         for bird in birds:
@@ -52,23 +61,12 @@ class Population:
 
         return species_list
 
-
-    def __init__(self, size, species_threshold, mutation_rate=0.1,mutation_strength=0.1):
-        self.size = size
-        self.species_threshold = species_threshold
-        self.mutation_rate = mutation_rate
-        self.mutation_strength = mutation_strength
-
-        self.generation = 1
-        self.birds = list[Bird] # TODO birds
-        self.species = []
-
     def all_dead(self):
         return all(not bird.alive for bird in self.birds)
 
     def next_generation(self):
 
-        self.species = speciate(self.birds, self.species_threshold)
+        self.species = self.speciate(self.birds, self.species_threshold)
 
         self.species.sort(key=lambda s: s.fitness, reverse=True)
 

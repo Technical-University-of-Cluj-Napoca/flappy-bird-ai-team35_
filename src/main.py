@@ -14,6 +14,67 @@ import os
 
 BG_FILE = "res/bg1.png"
 save_file = "scores"
+TITLE_IMG = None
+BUTTONS_IMG = None
+
+
+STATE_TITLE = "title"
+STATE_GAME = "game"
+STATE_HIGHSCORES = "scores"
+
+game_state = STATE_TITLE
+
+def get_buttons_rects():
+    btn_w = BUTTONS_IMG.get_width()
+    btn_h = BUTTONS_IMG.get_height() // 3
+
+    x = (width - btn_w) // 2
+    y = height // 2 - btn_h
+
+    return [
+        pygame.Rect(x, y + i * btn_h, btn_w, btn_h)
+        for i in range(3)
+    ]
+
+def draw_title_screen():
+    overlay = pygame.Surface((width, height), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))
+    screen.blit(overlay, (0, 0))
+
+    title_x = (width - TITLE_IMG.get_width()) // 2
+    title_y = 40
+    screen.blit(TITLE_IMG, (title_x, title_y))
+
+    btn_x = (width - BUTTONS_IMG.get_width()) // 2
+    btn_y = height // 2 - BUTTONS_IMG.get_height() // 6
+    screen.blit(BUTTONS_IMG, (btn_x, btn_y))
+
+def handle_title_click(pos):
+    global game_state, manual, flappy, pop, score
+
+    buttons = get_buttons_rects()
+
+    if buttons[0].collidepoint(pos):
+        manual = True
+        flappy = Flappy()
+        score = 0
+        create_pipes()
+        game_state = STATE_GAME
+
+    elif buttons[1].collidepoint(pos):
+        manual = False
+        pop = Population(
+            400,
+            2.0,
+            mutation_rate=0.15,
+            mutation_strength=0.08
+        )
+        score = 0
+        create_pipes()
+        game_state = STATE_GAME
+
+    elif buttons[2].collidepoint(pos):
+        game_state = STATE_HIGHSCORES
 
 
 def create_pipes():
@@ -54,31 +115,49 @@ def draw_hscores():
         score_label.draw(screen, s)
 
 def update(delta: float):
-    global flappy, running, show_scores
+    global running, show_scores, game_state
 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             running = False
-        elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_h:
-            show_scores = not show_scores
 
+        elif ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_ESCAPE:
+                game_state = STATE_TITLE
+
+            elif ev.key == pygame.K_h:
+                show_scores = not show_scores
+
+        elif ev.type == pygame.MOUSEBUTTONDOWN:
+            if game_state == STATE_TITLE:
+                handle_title_click(ev.pos)
 
 def physics_update(delta: float):
-    global screen, flappy, pipes, height, width, number_label, score, hscores, hscores_auto, show_scores
+    global score, game_state
 
-    keys = pygame.key.get_pressed()
+    if game_state == STATE_TITLE:
+        draw_title_screen()
+        pygame.display.flip()
+        return
+
+    if game_state == STATE_HIGHSCORES:
+        draw_hscores()
+        pygame.display.flip()
+        return
+
     score += pipes.physics_update(delta)
 
     if manual:
+        keys = pygame.key.get_pressed()
         flappy.physics_update(delta, keys[pygame.K_SPACE])
 
         if pipes.collide_flappy(flappy) or flappy.y < 0 or flappy.y > height:
             hscores.append(score)
             hscores.sort(reverse=True)
-            hscores = hscores[:10]
+            hscores[:] = hscores[:10]
             save_scores()
-            score = 0
-            exit(0)
+            game_state = STATE_TITLE
+
     else:
         for bb in pop.birds:
             if not bb.alive:
@@ -90,32 +169,27 @@ def physics_update(delta: float):
                 bb.die()
 
         if pop.all_dead():
-            create_pipes()
             hscores_auto.append(score)
             hscores_auto.sort(reverse=True)
-            hscores_auto = hscores_auto[:10]
+            hscores_auto[:] = hscores_auto[:10]
             save_scores()
             score = 0
             pop.next_generation()
+            create_pipes()
 
-    if show_scores:
-        draw_hscores()
+    bg.draw(screen)
+    pipes.draw(screen)
+
+    if manual:
+        flappy.draw(screen)
     else:
-        bg.draw(screen)
-
-        pipes.draw(screen)
-
-        if manual:
-            flappy.draw(screen)
-        else:
-            for bb in pop.birds:
-                if not bb.alive:
-                    continue
+        for bb in pop.birds:
+            if bb.alive:
                 bb.draw(screen)
 
-        score_label.x = 2
-        score_label.y = 2
-        score_label.draw(screen, score)
+    score_label.x = 2
+    score_label.y = 2
+    score_label.draw(screen, score)
 
     pygame.display.flip()
 
@@ -127,6 +201,8 @@ if __name__ == "__main__":
 
     screen = pygame.display.set_mode((width, height), flags=pygame.SCALED)
     pygame.display.set_caption("Flappy Bird")
+    TITLE_IMG = pygame.image.load("res/title_screen.png").convert_alpha()
+    BUTTONS_IMG = pygame.image.load("res/buttons.png").convert_alpha()
 
     pygame.font.init()
     font = pygame.font.Font(None, 16)
@@ -138,6 +214,7 @@ if __name__ == "__main__":
 
     random.seed(time.time())
 
+    game_state = STATE_TITLE
     show_scores = False
     manual = False
     if manual:

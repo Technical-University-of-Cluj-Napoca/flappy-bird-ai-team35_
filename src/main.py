@@ -92,7 +92,7 @@ if __name__ == "__main__":
     if manual:
         flappy = Flappy()
     else:
-        pop = Population(3000, 1.5, mutation_rate=0.9, mutation_strength=0.2)
+        pop = Population(4000, 2, mutation_rate=0.9, mutation_strength=0.2)
 
     bg = AnimatedSprite(BG_FILE, (width, height))
 
@@ -113,6 +113,6 @@ if __name__ == "__main__":
 
         game_physics_delta += delta
         if game_physics_delta >= game_spf:
-            game_physics_delta *= 2
+            # game_physics_delta *= 2
             physics_update(game_physics_delta)
             game_physics_delta = 0

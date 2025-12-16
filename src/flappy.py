@@ -25,7 +25,7 @@ class Flappy:
     sprite_height = 12
 
     gravity = 700
-    jump = 200
+    jump = 220
     max_vel = 300
 
     def __init__(self):

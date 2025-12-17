@@ -29,7 +29,7 @@ def get_buttons_rects():
     btn_h = BUTTONS_IMG.get_height() // 3
 
     x = (width - btn_w) // 2
-    y = height // 2 - btn_h
+    y = height // 2 - btn_h // 2
 
     return [
         pygame.Rect(x, y + i * btn_h, btn_w, btn_h)
@@ -115,7 +115,7 @@ def draw_hscores():
         score_label.draw(screen, s)
 
 def update(delta: float):
-    global running, show_scores, game_state
+    global running, game_state
 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
@@ -125,17 +125,17 @@ def update(delta: float):
             if ev.key == pygame.K_ESCAPE:
                 game_state = STATE_TITLE
 
-            elif ev.key == pygame.K_h:
-                show_scores = not show_scores
-
         elif ev.type == pygame.MOUSEBUTTONDOWN:
             if game_state == STATE_TITLE:
                 handle_title_click(ev.pos)
+            elif game_state == STATE_HIGHSCORES:
+                game_state = STATE_TITLE
 
 def physics_update(delta: float):
     global score, game_state
 
     if game_state == STATE_TITLE:
+        bg.draw(screen)
         draw_title_screen()
         pygame.display.flip()
         return
@@ -195,7 +195,7 @@ def physics_update(delta: float):
 
 
 if __name__ == "__main__":
-    global width, height, screen, score, running, flappy, bg, pipes, pop, manual, score_label, show_scores
+    global width, height, screen, score, running, flappy, bg, pipes, pop, manual, score_label
     width = 144
     height = 256
 
@@ -215,7 +215,6 @@ if __name__ == "__main__":
     random.seed(time.time())
 
     game_state = STATE_TITLE
-    show_scores = False
     manual = False
     if manual:
         flappy = Flappy()
